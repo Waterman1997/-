@@ -34,7 +34,7 @@ echo.
 echo.
 echo.      [1] 远程下载最新 HOSTS      [2] 恢复初始 HOSTS
 echo.
-echo.-----------------------------------------------idoog.me----
+echo.-----------------------------------------------------------
 if exist "%SystemRoot%\System32\choice.exe" goto Choice
 
 set /p choice=请输入选项并按回车键确认:
