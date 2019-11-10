@@ -73,3 +73,82 @@ def upfile(request):
             for chunk in f.chunks():
                 destination.write(chunk)
         return HttpResponse('NICE')
+
+==============================================================================================
+from django.shortcuts import render
+
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from .forms import NameForm
+import json
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib import auth
+from django.contrib.auth.decorators import login_required
+
+# Create your views here.
+
+def home(request):
+    # 此函数返回布尔值，用来判断用户是否登录
+    if request.user.is_authenticated:
+        name = request.user.username
+        return HttpResponse('用户"%s"已登陆' % name)
+    else:
+        return HttpResponseRedirect('/login/')
+
+    
+# @csrf_exempt
+# def home(request):
+#     # if this is a POST request we need to process the form data
+#     if request.method == 'POST':
+#         # create a form instance and populate it with data from the request:
+#         form = NameForm(request.POST)
+#         # check whether it's valid:
+#         if form.is_valid():
+
+#             info = form.cleaned_data
+#             userInfo = {
+#                 'subject': info['subject'],
+#                 'email': info['email'],
+#                 'message': info['message'],
+#             }
+#             return JsonResponse(userInfo)
+
+#     # if a GET (or any other method) we'll create a blank form
+#     else:
+#         content = '首页'
+#         form = NameForm()
+#     return render(request, 'formApp/index.html', locals())
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username', '')
+        password = request.POST.get('userpw', '')
+        print(username,password)
+        user = auth.authenticate(username=username, password=password)
+        if user is not None and user.is_active:
+
+            # 密码验证成功并且标记为活动用户
+            auth.login(request, user)
+            # 此处我重定向至首页
+            return HttpResponseRedirect('/')
+
+        else:
+            # Show an error page
+            return HttpResponse('登陆失败')
+       
+    else:
+        content = '首页'
+        form = NameForm()
+        return render(request, 'formApp/index.html', locals())
+
+def logout_view(request):
+
+    #清除了cookie和session，清除了当前的用户，
+    auth.logout(request)
+
+    # 此处可重定向至登录页
+    return HttpResponse('已成功退出登录')
+
+# 测试需要登陆才能访问的页面，添加装饰器login_required,可传入参数，如果未登录跳转至登录页
+@login_required(login_url='/login/')
+def securityPage(request):
+    return HttpResponse('这是只有已登录用户才能访问的页面')
